@@ -1,0 +1,33 @@
+{
+  "name": "telegram_update_archivist",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node ./src/index.ts",
+    "build-exe": "nexe --build -o my-app.exe"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stas255/Telegram_Update_Archivist.git"
+  },
+  "author": "Stanislav Tolstonozhenko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Stas255/Telegram_Update_Archivist/issues"
+  },
+  "homepage": "https://github.com/Stas255/Telegram_Update_Archivist#readme",
+  "dependencies": {
+    "@codecast-duo/codecast-duo-telegrambot": "^0.2.0",
+    "dotenv": "^16.4.1",
+    "nedb": "^1.8.0",
+    "sqlite3": "^5.1.7",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@types/nedb": "^1.8.16",
+    "@types/node": "^20.11.16"
+  }
+}
