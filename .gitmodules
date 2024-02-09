@@ -1,0 +1,3 @@
+[submodule "src/classes/Tele_Typeorm"]
+	path = src/classes/Tele_Typeorm
+	url = https://github.com/Stas255/Project_Tele_Typeorm.git

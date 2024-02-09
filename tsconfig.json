@@ -1,4 +1,7 @@
 {
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
@@ -13,8 +16,9 @@
     "typeRoots": ["./node_modules/@types"],
     "baseUrl": ".",
     "paths": {
-      "classes/*": ["src/classes/*"]
-    }
+      "classes/*": ["src/classes/*"],
+      "@infor":[ "./src/classes/Infor"]
+    },
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
