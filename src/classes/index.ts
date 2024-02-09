@@ -1,2 +1,3 @@
 export * from './Mutex';
-export * from './Typeorm';
+export * from './Tele_Typeorm';
+export * from './Infor';

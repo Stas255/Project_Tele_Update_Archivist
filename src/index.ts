@@ -3,9 +3,9 @@ import 'sqlite3';
 import { Telegram } from "@codecast-duo/codecast-duo-telegrambot";
 import { Mutex } from "./classes";
 import { TelegramOptions, UpdateTypes } from "@codecast-duo/codecast-duo-telegrambot/dist/types";
-import { Infor } from './classes/Infor';
+import { Infor } from '@infor';
 
-import { DbChatJoinRequest } from '../../Project_Tele_Typeorm';
+import { DbChatJoinRequest } from './classes';
 
 const dbChatJoinRequest = new DbChatJoinRequest();
 
