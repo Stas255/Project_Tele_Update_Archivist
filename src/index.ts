@@ -1,22 +1,24 @@
 import 'dotenv/config'
 import 'sqlite3';
 import { Telegram } from "@codecast-duo/codecast-duo-telegrambot";
-import { Mutex, Typeorm, JsonStorage } from "./classes";
-import { TelegramBotOptions } from "classes/Typeorm/models";
+import { Mutex } from "./classes";
 import { TelegramOptions, UpdateTypes } from "@codecast-duo/codecast-duo-telegrambot/dist/types";
+import { Infor } from './classes/Infor';
 
-const typeorm = new Typeorm(process.env.TZ_DB_NAME || 'telegram_bot.db');
+import { DbChatJoinRequest } from '../../Project_Tele_Typeorm';
+
+const dbChatJoinRequest = new DbChatJoinRequest();
+
 let bot: Telegram;
 
 const mutex = new Mutex();
-
-const jsonStorage = new JsonStorage();
 
 function createTelegramOptions(): TelegramOptions {
     if (!process.env.TELEGRAM_BOT_TOKEN) {
         throw new Error('TELEGRAM_BOT_TOKEN environment variable not set');
     }
     const telegramOptions = {
+        telegramApi: 'https://localhost:3000',
         telegramToken: process.env.TELEGRAM_BOT_TOKEN,
         start: false,
         optionUpdate: {
@@ -32,42 +34,13 @@ function createTelegramOptions(): TelegramOptions {
     return telegramOptions;
 }
 
-function getTelegramOptions(option: TelegramBotOptions): TelegramOptions {
-    if (!process.env.TELEGRAM_BOT_TOKEN) {
-        throw new Error('TELEGRAM_BOT_TOKEN environment variable not set');
-    }
-    const telegramOptions: TelegramOptions = {
-        telegramToken: option.botToken,
-        start: false,
-        optionUpdate: {
-            offset: 0,
-            allowed_updates: option.allowed_updates as (keyof UpdateTypes)[],
-            limit: option.limit
-        },
-        optionPollingWaitManager: {
-            maxWaitTime: 3000,
-            onWaitTooLong: () => { console.log('Wait too long'); }
-        }
-    };
-    return telegramOptions;
-}
-
-let added = 0;
-
 async function build() {
-    await typeorm.connect();
+    Infor.updateInfo('added', 0);
+    await dbChatJoinRequest.connect();
     if (!process.env.TELEGRAM_BOT_TOKEN) {
         throw new Error('TELEGRAM_BOT_TOKEN environment variable not set');
     }
-    let telegramOptions = null;
-    let option = await typeorm.getTelegramBotOptionsByToken(process.env.TELEGRAM_BOT_TOKEN);
-
-    if (!option) {
-        telegramOptions = createTelegramOptions();
-        typeorm.createAndSaveTelegramBotOptions(telegramOptions);
-    } else {
-        telegramOptions = getTelegramOptions(option);
-    }
+    let telegramOptions = createTelegramOptions();
 
     bot = new Telegram(telegramOptions);
 
@@ -76,32 +49,37 @@ async function build() {
     }
 
     bot.setPollingWaitManager("exampleFunction", shouldContinuePolling);
-
+    let i = 0;
     bot.onUpdate('chat_join_request', (callback, update) => {
-        mutex.dispatch(() => jsonStorage.save(update));
-        mutex.dispatch(async () => { added++; });
-    });
-
-    bot.onUpdate('channel_post', (callback, update) => {
-        mutex.dispatch(() => jsonStorage.save(update));
-        mutex.dispatch(async () => { added++; });
-    });
-
-    bot.onUpdate('message', (callback, update) => {
-        mutex.dispatch(() => jsonStorage.save(update));
-        mutex.dispatch(async () => { added++; });
-    });
-
-    bot.onUpdate('poll', (callback, update) => {
-        mutex.dispatch(() => jsonStorage.save(update));
-        mutex.dispatch(async () => { added++; });
-    });
-
-    bot.onText('stop', async (message) => {
-        setTimeout(() => {
-            mutex.dispatch(async () => stop());
-            mutex.dispatch(async () => { bot.sendMessage(message.chat.id, 'Stopping bot'); });
-        }, 10000);
+        console.log(++i);
+        if (callback.invite_link) {
+            mutex.dispatch(() => dbChatJoinRequest.createChatJoinRequest({
+                id: update.update_id,
+                chat: {
+                    id: callback.chat.id,
+                    title: callback.chat.title || 'No title',
+                    type: callback.chat.type
+                },
+                from: {
+                    id: callback.from.id
+                },
+                date: callback.date,
+                invite_link: {
+                    id: callback.invite_link!.invite_link,
+                    name: callback.invite_link!.name || 'No name',
+                    user_creator: {
+                        id: callback.invite_link!.creator.id,
+                        first_name: callback.invite_link!.creator.first_name,
+                        last_name: callback.invite_link!.creator.last_name || '',
+                        username: callback.invite_link!.creator.username || '',
+                    },
+                    pending_join_request_count: callback.invite_link!.pending_join_request_count || -1
+                }
+            }));
+            mutex.dispatch(async () => { Infor.incrementInfo('added', 1); });
+        }else{
+            console.log('No invite_link');
+        }
     });
 }
 
@@ -112,13 +90,13 @@ async function start() {
 
 async function stop() {
     await bot.stoptUpdater();
-    await typeorm.disconnect();
+    await dbChatJoinRequest.disconnect();
 }
 
 
 setInterval(() => {
-    console.log(`Додано ${added} об'єктів`);
-    added = 0;
+    console.log(`Додано ${Infor.getInfo('added')} об'єктів`);
+    console.log(`Знайдено ${Infor.getInfo('countSameChatJoinRequest')} подібних запитів на вступ до чату \n`);
 }, 5000);
 
 start();

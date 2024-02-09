@@ -1,6 +1,6 @@
 {
   "name": "telegram_update_archivist",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -19,12 +19,13 @@
   },
   "homepage": "https://github.com/Stas255/Telegram_Update_Archivist#readme",
   "dependencies": {
-    "@codecast-duo/codecast-duo-telegrambot": "^0.2.0",
+    "@codecast-duo/codecast-duo-telegrambot": "^0.3.0",
     "dotenv": "^16.4.1",
     "nedb": "^1.8.0",
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@types/nedb": "^1.8.16",
